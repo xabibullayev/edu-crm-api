@@ -1,20 +1,21 @@
 import { Response, Request } from "express";
+import Payment from "../models/Payment";
 import Student from "../models/Student";
 
-// GET ALL STUDENTS
-export const getStudents = async (req: Request, res: Response) => {
+// GET ALL PAYMENTS
+export const getPayments = async (req: Request, res: Response) => {
   try {
-    const students = await Student.find();
+    const payments = await Payment.find();
 
-    res.status(200).json(students);
+    res.status(200).json(payments);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error!";
     res.status(500).json(message);
   }
 };
 
-// GET A STUDENT
-export const getStudent = async (req: Request, res: Response) => {
+// GET A PAYMENT
+export const getPayment = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
@@ -22,60 +23,58 @@ export const getStudent = async (req: Request, res: Response) => {
       return res.status(400).json("Id kiritilmegen!");
     }
 
-    const student = await Student.findById(id);
+    const payment = await Payment.findById(id);
 
-    res.status(200).json(student);
+    res.status(200).json(payment);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error!";
     res.status(500).json(message);
   }
 };
 
-// ADD A NEW STUDENT
-export const addStudent = async (req: Request, res: Response) => {
-  try {
-    const {
-      firstname,
-      lastname,
-      phoneNumber,
-      birthYear,
-      socialStatus,
-      groupId,
-    } = req.body;
+// ADD A NEW PAYMENT
+export const addPayment = async (req: Request, res: Response) => {
+  console.log(req.body);
 
-    if (
-      !firstname ||
-      !lastname ||
-      !phoneNumber ||
-      !birthYear ||
-      !socialStatus ||
-      !groupId
-    ) {
+  try {
+    const { amount, paymentDate, paymentType, studentId } = req.body;
+
+    if (!amount || !paymentDate || !paymentType || !studentId) {
       return res
         .status(400)
         .json("Iltimas berilgen hamme maydanlardi toldirin!");
     }
 
-    const newStudent = new Student({
-      firstname,
-      lastname,
-      phoneNumber,
-      birthYear,
-      socialStatus,
-      groupId,
+    const student = await Student.findById(studentId);
+
+    if (!student) {
+      return res.status(400).json("Oqiwshi tabilmadi!");
+    }
+
+    const newPayment = new Payment({
+      amount,
+      paymentDate,
+      paymentType,
+      studentId,
     });
 
-    await newStudent.save();
+    await newPayment.save();
 
-    res.status(200).json("Student kiritildi!");
+    console.log(student);
+
+    await student.updateOne({
+      balans: Number(student.balans) + parseFloat(amount),
+    });
+
+    res.status(200).json("Tolem kiritildi!");
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error!";
     res.status(500).json(message);
   }
 };
 
-// EDIT A STUDENT
-export const editStudent = async (req: Request, res: Response) => {
+// EDIT A PAYMENT
+export const editPayment = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { body } = req;
@@ -88,7 +87,7 @@ export const editStudent = async (req: Request, res: Response) => {
       return res.status(400).json("Taza mag'liwmatlar kiritilmegen!");
     }
 
-    await Student.findByIdAndUpdate(id, { $set: body });
+    await Payment.findByIdAndUpdate(id, { $set: body });
 
     res.status(200).json("Mag'liwmatlar o'zgertirildi!");
   } catch (err) {
@@ -97,8 +96,8 @@ export const editStudent = async (req: Request, res: Response) => {
   }
 };
 
-// DELETE A STUDENT
-export const deleteStudent = async (res: Response, req: Request) => {
+// DELETE A PAYMENT
+export const deletePayment = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
@@ -106,9 +105,9 @@ export const deleteStudent = async (res: Response, req: Request) => {
       return res.status(400).json("Id berilmegen!");
     }
 
-    await Student.findByIdAndRemove(id);
+    await Payment.findByIdAndRemove(id);
 
-    res.status(200).json("Student o'shirildi!");
+    res.status(200).json("To'lem o'shirildi!");
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error!";
     res.status(500).json(message);

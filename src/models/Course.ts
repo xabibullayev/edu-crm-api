@@ -6,7 +6,14 @@ const courseSchema = new mongoose.Schema({
     type: String, 
     required: true
   },
-
+  price: {
+    type: Number,
+    required: true
+  },
+  duration: {
+    type: Number,
+    required: true
+  }
 }, {timestamps: true});
 
 const Course = mongoose.model<ICourse>("Course", courseSchema);

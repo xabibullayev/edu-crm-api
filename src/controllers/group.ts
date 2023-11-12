@@ -1,50 +1,74 @@
 import { Response, Request } from "express";
 import Group from "../models/Group";
 
-// GET ALL GROUPS 
+// GET ALL GROUPS
 export const getGroups = async (req: Request, res: Response) => {
   try {
-    const groups = await Group.find()
+    const groups = await Group.find();
 
-    res.status(200).json(groups)
-
-  } catch(err) {
+    res.status(200).json(groups);
+  } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error!";
     res.status(500).json(message);
   }
-}
+};
 
 // GET A GROUP
 export const getGroup = async (req: Request, res: Response) => {
   try {
-    const {id} = req.params
+    const { id } = req.params;
 
-    if(!id) {
-      return res.status(400).json("Id kiritilmegen!")
+    if (!id) {
+      return res.status(400).json("Id kiritilmegen!");
     }
 
-    const group = await Group.findById(id)
+    const group = await Group.findById(id);
 
-    res.status(200).json(group)
-  } catch(err) {
+    res.status(200).json(group);
+  } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error!";
     res.status(500).json(message);
   }
-}
+};
 
-// ADD A NEW GROUP 
+// ADD A NEW GROUP
 export const addGroup = async (req: Request, res: Response) => {
   try {
-    const {firstname, lastname, phone_number} = req.body;
+    const {
+      title,
+      courseId,
+      teacherId,
+      days,
+      auditoryId,
+      time,
+      startDate,
+      endDate,
+    } = req.body;
 
-    if (!firstname || !lastname || !phone_number) {
+    if (
+      !title ||
+      !courseId ||
+      !teacherId ||
+      !days ||
+      !auditoryId ||
+      !time ||
+      !startDate ||
+      !endDate
+    ) {
       return res
         .status(400)
         .json("Iltimas berilgen hamme maydanlardi toldirin!");
     }
 
     const newGroup = new Group({
-      firstname, lastname, phone_number
+      title,
+      courseId,
+      teacherId,
+      days,
+      auditoryId,
+      time,
+      startDate,
+      endDate,
     });
 
     await newGroup.save();
@@ -56,42 +80,62 @@ export const addGroup = async (req: Request, res: Response) => {
   }
 };
 
-// EDIT A GROUP 
-export const editGroup = async (res: Response, req: Request) => {
+// EDIT A GROUP
+export const editGroup = async (req: Request, res: Response) => {
   try {
-    const {id} = req.params
-    const {body} = req
+    const { id } = req.params;
+    const { title, courseId, teacherId, auditoryId, startDate, duration } =
+      req.body;
 
-    if(!id) {
-      return res.status(400).json("Id kiritilmegen!")
+    if (!id) {
+      return res.status(400).json("Id kiritilmegen!");
     }
 
-    if(!body) {
-      return res.status(400).json("Taza mag'liwmatlar kiritilmegen!")
+    if (
+      !title ||
+      !courseId ||
+      !teacherId ||
+      !auditoryId ||
+      !startDate ||
+      !duration
+    ) {
+      return res.status(400).json("Taza mag'liwmatlar kiritilmegen!");
     }
 
-    await Group.findByIdAndUpdate(id, {$set: body})
+    const endDate = new Date(
+      new Date(startDate).setMonth(new Date(startDate).getMonth() + duration)
+    );
 
-    res.status(200).json("Mag'liwmatlar o'zgertirildi!")
+    const newData = {
+      title,
+      courseId,
+      teacherId,
+      auditoryId,
+      startDate,
+      endDate,
+    };
 
+    await Group.findByIdAndUpdate(id, { $set: newData });
+
+    res.status(200).json("Mag'liwmatlar o'zgertirildi!");
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error!";
     res.status(500).json(message);
   }
 };
 
-// DELETE A GROUP 
-export const deleteGroup = async (res: Response, req: Request) => {
+// DELETE A GROUP
+export const deleteGroup = async (req: Request, res: Response) => {
   try {
-    const {id} = req.params
+    const { id } = req.params;
 
-    if(!id) { 
+    if (!id) {
       return res.status(400).json("Id berilmegen!");
     }
 
     await Group.findByIdAndRemove(id);
 
-    res.status(200).json("Gruppa o'shirildi!")
+    res.status(200).json("Gruppa o'shirildi!");
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error!";
     res.status(500).json(message);

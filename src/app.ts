@@ -5,6 +5,11 @@ import cors from "cors";
 import cookieparser from "cookie-parser";
 import authRouter from "./routes/auth";
 import teacherRouter from "./routes/teacher";
+import auditoryRouter from "./routes/auditory";
+import groupRouter from "./routes/group";
+import courseRouter from "./routes/course";
+import studentRouter from "./routes/student";
+import paymentRouter from "./routes/payment";
 
 dotenv.config();
 
@@ -30,6 +35,11 @@ mongoose
 
 app.use("/api/auth", authRouter);
 app.use("/api/teachers", teacherRouter);
+app.use("/api/auditories", auditoryRouter);
+app.use("/api/groups", groupRouter);
+app.use("/api/students", studentRouter);
+app.use("/api/courses", courseRouter);
+app.use("/api/payments", paymentRouter);
 
 const port = process.env.PORT || 5000;
 
